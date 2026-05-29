@@ -1,0 +1,15 @@
+# Preliminares ---
+
+## limpiar el entorno de trabajo
+rm(list = ls())
+
+# cargar las librerias readxl, dplyr y tidyverse
+library(readxl)
+library(dplyr)
+library(tidyverse)
+
+# Lee el excel con los datos
+df <- read_excel("/Users/k2252484/Downloads/P_Data_Extract_From_World_Development_Indicators.xlsx",
+                 sheet = "Data")
+# Mostrar las primeras 6 filas
+head(df)
