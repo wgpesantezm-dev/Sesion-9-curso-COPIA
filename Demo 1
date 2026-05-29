@@ -11,5 +11,72 @@ library(tidyverse)
 # Lee el excel con los datos
 df <- read_excel("/Users/k2252484/Downloads/P_Data_Extract_From_World_Development_Indicators.xlsx",
                  sheet = "Data")
-# Mostrar las primeras 6 filas
-head(df)
+# muestrame los nombres de las variables
+options(scipen = 999)
+colnames(df)
+
+# conserva solo los paises de America Latina y el Caribe
+df_latam <- df %>%
+  filter(`Country Name` %in% c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Costa Rica",
+                                 "Cuba", "Dominican Republic", "Ecuador", "El Salvador",
+                                 "Guatemala", "Haiti", "Honduras", "Mexico", "Nicaragua",
+                                 "Panama", "Paraguay", "Peru", "Puerto Rico",
+                                 "Uruguay", "Venezuela"))
+
+# calcula el promedio de los indicadores para america latina a lo largo del tiempo
+df_latam_avg <- df_latam %>%
+  pivot_longer(
+    cols = matches("\\[YR"),
+    names_to = "Year",
+    values_to = "Value"
+  ) %>%
+  mutate(Value = as.numeric(Value)) %>%
+  group_by(`Country Name`, `Series Name`) %>%
+  summarise(avg_value = mean(Value, na.rm = TRUE), .groups = "drop")
+
+# muestra el resultado
+print(df_latam_avg)
+
+# Anade a la tabla el min max y desviacion estandar de cada indicador de cada pais
+df_latam_stats <- df_latam %>%
+  pivot_longer(
+    cols = matches("\\[YR"),
+    names_to = "Year",
+    values_to = "Value"
+  ) %>%
+  mutate(Value = as.numeric(Value)) %>%
+  group_by(`Country Name`, `Series Name`) %>%
+  summarise(
+    avg_value = mean(Value, na.rm = TRUE),
+    min_value = min(Value, na.rm = TRUE),
+    max_value = max(Value, na.rm = TRUE),
+    sd_value = sd(Value, na.rm = TRUE),
+    .groups = "drop"
+  )
+# muestra el resultado
+print(df_latam_stats)
+
+# Grafica el promedio de cada indicador a lo largo del tiempo para Ecuador
+df_ecuador <- df_latam %>%
+  filter(`Country Name` == "Ecuador") %>%
+  pivot_longer(
+    cols = matches("\\[YR"),
+    names_to = "Year",
+    values_to = "Value"
+  ) %>%
+  mutate(Value = as.numeric(Value))
+
+library(ggplot2)
+library(dplyr)
+library(readr)
+
+df_ecuador |>
+  mutate(Year = parse_number(Year)) |>
+  filter(!is.na(Value)) |>
+  ggplot(aes(x = Year, y = Value)) +
+  geom_line() +
+  facet_wrap(~ `Series Name`, scales = "free_y", labeller = label_wrap_gen(25)) +
+  labs(
+    title = "Indicadores de Ecuador a lo largo del tiempo",
+    x = "Año", y = NULL
+  )
