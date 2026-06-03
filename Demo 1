@@ -80,3 +80,6 @@ df_ecuador |>
     title = "Indicadores de Ecuador a lo largo del tiempo",
     x = "Año", y = NULL
   )
+
+# Hasta aqui llega la primera parte del analisis
+
